@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin — Vacantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 30px auto; padding: 0 12px; }
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+    a.btn, button.btn { display:inline-block; padding:8px 12px; border-radius:8px; background:#2563eb; color:#fff; text-decoration:none; border:none; cursor:pointer; }
+    a.btn:hover, button.btn:hover { background:#1e40af; }
+    .msg { background:#f1f5f9; padding:10px; border-radius:8px; margin-bottom:12px; }
+    .grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
+    input, select { width:100%; padding:6px; border:1px solid #e5e7eb; border-radius:8px; }
+    table { width:100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom:1px solid #e5e7eb; padding:8px; text-align:left; vertical-align:top; }
+    .small { font-size:12px; color:#64748b; }
+    .nowrap { white-space: nowrap; }
+    .muted { background:#6b7280; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Administración — Vacantes</h1>
+    <div>
+      <a class="btn" href="{{ url_for('admin_postulaciones') }}">Postulaciones</a>
+      <a class="btn muted" href="{{ url_for('admin_logout') }}">Salir</a>
+    </div>
+  </header>
+
+  {% if mensaje %}<div class="msg">{{ mensaje }}</div>{% endif %}
+
+  {# --- Parche: si 'filtros' no llega desde app.py, lo definimos vacío para no romper --- #}
+  {% if filtros is not defined %}
+    {% set filtros = {
+      'titulo':'',
+      'area':'',
+      'publicada':''
+    } %}
+  {% endif %}
+
+  <!-- Filtros -->
+  <form method="GET" style="margin-bottom:12px;">
+    <div class="grid">
+      <div>
+        <label class="small">Título</label>
+        <input name="titulo" placeholder="Ej: Recepcionista" value="{{ filtros.titulo }}">
+      </div>
+      <div>
+        <label class="small">Área</label>
+        <input name="area" placeholder="Ej: Administración, Enfermería" value="{{ filtros.area }}">
+      </div>
+      <div>
+        <label class="small">Publicada</label>
+        <select name="publicada">
+          <option value="">(todas)</option>
+          <option value="true"  {% if filtros.publicada=='true' %}selected{% endif %}>Sí</option>
+          <option value="false" {% if filtros.publicada=='false' %}selected{% endif %}>No</option>
+        </select>
+      </div>
+      <div class="nowrap" style="align-self:end; display:flex; gap:6px;">
+        <button class="btn" type="submit">Filtrar</button>
+        <a class="btn muted" href="{{ url_for('admin_vacantes') }}">Limpiar</a>
+        <a class="btn" href="{{ url_for('admin_vacante_nueva') }}">Crear vacante</a>
+      </div>
+    </div>
+  </form>
+
+  <!-- Tabla de vacantes -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Área</th>
+        <th>Descripción</th>
+        <th>Publicada</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in vacantes %}
+      <tr>
+        <td class="small nowrap">#{{ v.id }}</td>
+        <td><strong>{{ v.titulo }}</strong></td>
+        <td>{{ v.area }}</td>
+        <td>{{ v.descripcion or '' }}</td>
+        <td>{{ 'Sí' if v.publicada else 'No' }}</td>
+        <td class="nowrap">
+          <a class="btn" href="{{ url_for('postular') }}?vacante_id={{ v.id }}&area={{ v.area }}">Ver formulario</a>
+          <form action="{{ url_for('admin_cerrar_vacante', vacante_id=v.id) }}" method="post" style="display:inline" onsubmit="return confirm('¿Cerrar esta vacante?');">
+            <button class="btn muted" type="submit">Cerrar</button>
+          </form>
+          <form action="{{ url_for('admin_eliminar_vacante', vacante_id=v.id) }}" method="post" style="display:inline" onsubmit="return confirm('¿Eliminar esta vacante?');">
+            <button class="btn" type="submit" style="background:#dc2626">Eliminar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      {% if not vacantes %}
+      <tr>
+        <td colspan="6" class="small">No hay vacantes con los filtros actuales.</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</body>
+</html>

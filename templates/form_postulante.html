@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="mb-3">
+  <a href="/" id="back-form-alt" class="btn" style="background:#e2e8f0">← Volver</a>
+  <script>
+    (function(){
+      var formEl = document.querySelector("form[action='{{ url_for('postular') }}']");
+      var back = document.getElementById('back-form-alt');
+      if (formEl && back) {
+        var dirty = false;
+        formEl.addEventListener('input', function(){ dirty = true; }, { capture: true });
+        back.addEventListener('click', function(e){
+          if (dirty) {
+            var ok = confirm('Aún no enviaste la postulación. ¿Querés salir igualmente?');
+            if (!ok) { e.preventDefault(); }
+          }
+        });
+      }
+    })();
+  </script>
+</div>
+<h1 class="text-2xl font-semibold mb-4">Nueva postulación</h1>
+<form action="{{ url_for('postular') }}" method="post" enctype="multipart/form-data" class="bg-white rounded-2xl shadow p-6 space-y-4">
+<div>
+<label class="block text-sm font-medium">Nombre y Apellido <span class="text-rose-600">*</span></label>
+<input type="text" name="nombre_apellido" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+</div>
+<div>
+<label class="block text-sm font-medium">DNI <span class="text-rose-600">*</span></label>
+<input type="text" name="dni" inputmode="numeric" pattern="^[0-9]+$" title="El DNI debe contener solo números (sin puntos ni símbolos)." required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">Edad <span class="text-rose-600">*</span></label>
+<input type="number" name="edad" min="15" max="100" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+</div>
+<div>
+<label class="block text-sm font-medium">Celular <span class="text-rose-600">*</span></label>
+<input type="text" name="celular" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">E‑mail <span class="text-rose-600">*</span></label>
+<input type="email" name="mail" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+</div>
+<div>
+<label class="block text-sm font-medium">Disponibilidad <span class="text-rose-600">*</span></label>
+<select name="disponibilidad" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="">Seleccionar…</option>
+<option>Full time</option>
+<option>Part time</option>
+</select>
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">¿Tenés un familiar trabajando en la clínica? <span class="text-rose-600">*</span></label>
+<select name="familiar_en_clinica" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="" disabled selected>Seleccionar…</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
+</select>
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">¿Cómo te enteraste del puesto? <span class="text-rose-600">*</span></label>
+<select name="fuente_postulacion" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="" disabled selected>Seleccionar…</option>
+<option>Referencias por conocidos</option>
+<option>LinkedIn</option>
+<option>Instagram</option>
+<option>Facebook</option>
+<option>Otros</option>
+</select>
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">Localidad <span class="text-rose-600">*</span></label>
+<select name="localidad" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="">Seleccionar…</option>
+{% for loc in localidades %}
+<option value="{{ loc.nombre }}">{{ loc.nombre }}</option>
+{% endfor %}
+</select>
+<p class="text-xs text-slate-500 mt-1">Podés seleccionar el nombre de la localidad.</p>
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">Área de preferencia <span class="text-rose-600">*</span></label>
+<select name="area_preferencia" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="">Seleccionar…</option>
+{% for area in areas %}
+<option value="{{ area.id if area.id is not none else area.nombre }}">{{ area.nombre }}</option>
+{% endfor %}
+</select>
+</div>
+
+<div>
+<label class="block text-sm font-medium">CV (PDF) <span class="text-rose-600">*</span></label>
+<input type="file" name="cv" accept="application/pdf" required class="mt-1 w-full" />
+</div>
+
+<div>
+  <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-language="es" data-theme="auto"></div>
+  <p class="text-xs text-slate-500 mt-1">Protegido por Turnstile</p>
+</div>
+
+
+<div>
+<label class="block text-sm font-medium">Licencia de conducir <span class="text-rose-600">*</span></label>
+<select name="licencia_conducir" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="">Seleccionar…</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium">Movilidad propia <span class="text-rose-600">*</span></label>
+<select name="movilidad_propia" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="">Seleccionar…</option>
+<option value="Sí">Sí</option>
+<option value="No">No</option>
+</select>
+</div>
+
+
+<div class="col-span-1 md:col-span-2 flex justify-end gap-2 pt-2">
+<a href="{{ url_for('home') }}" class="px-4 py-2 rounded-lg bg-slate-200 hover:bg-slate-300">Cancelar</a>
+<button class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Enviar</button>
+</div>
+</form>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{% endblock %}

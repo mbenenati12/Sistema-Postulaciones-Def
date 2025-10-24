@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Nueva vacante{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Crear vacante</h1>
+<form method="post" class="bg-white rounded-2xl shadow p-6 space-y-4">
+  <div>
+    <label class="block text-sm font-medium">Título <span class="text-rose-600">*</span></label>
+    <input name="titulo" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Área <span class="text-rose-600">*</span></label>
+    <select name="area" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+      <option value="">Seleccionar…</option>
+      {% for a in areas %}
+        <option value="{{ a.id if a.id is not none else a.nombre }}">{{ a.nombre if a.nombre else a }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Descripción <span class="text-rose-600">*</span></label>
+    <textarea name="descripcion" required rows="4" class="mt-1 w-full border border-slate-300 rounded-lg p-2"></textarea>
+  </div>
+  <div>
+    <label class="block text-sm font-medium">Estado</label>
+    <select name="estado" class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+      <option value="abierta" selected>abierta</option>
+      <option value="cerrada">cerrada</option>
+    </select>
+  </div>
+  <div class="flex justify-end gap-2">
+    <a href="{{ url_for('admin_vacantes') }}" class="btn" style="background:#e2e8f0">Cancelar</a>
+    <button class="btn btn-primary">Crear</button>
+  </div>
+</form>
+{% endblock %}
+

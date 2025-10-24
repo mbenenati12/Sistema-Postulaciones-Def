@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin - Postulaciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+    h1 { font-size: 24px; }
+    .msg { background: #e8f7ec; color: #0b6b2b; padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+    .msg-err { background: #fdeaea; color: #9d2222; }
+    form { margin-bottom: 20px; }
+    form > div { margin-bottom: 8px; display: inline-block; margin-right: 15px; }
+    label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 2px; }
+    input, select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+    button { padding: 8px 12px; background: #2b6cb0; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #235a94; }
+    /* [CHANGE] Revertir a estilos anteriores más amplios */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+    th { background: #f2f2f2; font-weight: bold; }
+    .actions { white-space: nowrap; }
+    .actions form { display: inline; margin-right: 5px; }
+    .actions button { font-size: 11px; padding: 4px 8px; }
+    .fecha { font-size: 11px; color: #666; }
+
+    /* Botón de eliminar (tacho) */
+    .btn-trash { background: #dc2626; border-radius: 6px; padding: 4px 8px; display: inline-flex; align-items: center; justify-content: center; border: 0; cursor: pointer; }
+    .btn-trash:hover { background: #b91c1c; }
+
+    
+  </style>
+</head>
+<body>
+  <h1>Postulaciones</h1>
+  <div style="margin:8px 0 16px;">
+    <button type="button" class="btn" style="background:#e2e8f0" onclick="if (document.referrer) { history.back(); } else { window.location.href='/admin/vacantes' }">← Volver</button>
+  </div>
+
+  {% if mensaje %}
+    <div class="msg{{ ' msg-err' if 'Error' in mensaje else '' }}">
+      {{ mensaje }}
+    </div>
+  {% endif %}
+
+  <!-- [CHANGE] Filtros: GET hacia la misma ruta, con names esperados por backend -->
+  <form method="GET" action="/admin/postulaciones">
+    <div>
+      <label>Área de preferencia</label>
+      <select name="area_preferencia">
+        <option value="">Todas</option>
+        {% for a in opciones.areas_pref %}
+          <option value="{{ a }}" {% if filtros.area_preferencia == a %}selected{% endif %}>{{ a }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Localidad</label>
+      <select name="localidad">
+        <option value="">Todas</option>
+        {% for l in opciones.localidades %}
+          <option value="{{ l }}" {% if filtros.localidad == l %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Disponibilidad</label>
+      <select name="disponibilidad">
+        <option value="">Todas</option>
+        {% for d in opciones.dispon %}
+          <option value="{{ d }}" {% if filtros.disponibilidad == d %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Licencia</label>
+      <select name="licencia">
+        <option value="">Todas</option>
+        <option value="Sí" {% if filtros.licencia == "Sí" %}selected{% endif %}>Sí</option>
+        <option value="No" {% if filtros.licencia == "No" %}selected{% endif %}>No</option>
+      </select>
+    </div>
+    <div>
+      <label>Estado</label>
+      <!-- [CHANGE] Estados normalizados -->
+      <select name="estado">
+        <option value="">Todos</option>
+        <option value="Recibido" {% if filtros.estado == "Recibido" %}selected{% endif %}>Recibido</option>
+        <option value="Preseleccionado" {% if filtros.estado == "Preseleccionado" %}selected{% endif %}>Preseleccionado</option>
+        <option value="Entrevista" {% if filtros.estado == "Entrevista" %}selected{% endif %}>Entrevista</option>
+        <option value="Ingresado" {% if filtros.estado == "Ingresado" %}selected{% endif %}>Ingresado</option>
+        <option value="Rechazado" {% if filtros.estado == "Rechazado" %}selected{% endif %}>Rechazado</option>
+      </select>
+    </div>
+    <div>
+      <label>Vacante</label>
+      <select name="vacante_id">
+        <option value="">Todas</option>
+        {% for v in vacantes %}
+          <option value="{{ v.id }}" {% if filtros.vacante_id == v.id|string %}selected{% endif %}>{{ v.titulo }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Edad mín</label>
+      <input type="number" name="edad_min" value="{{ filtros.edad_min }}" min="15" max="100" />
+    </div>
+    <div>
+      <label>Edad máx</label>
+      <input type="number" name="edad_max" value="{{ filtros.edad_max }}" min="15" max="100" />
+    </div>
+    <div>
+      <label>Movilidad</label>
+      <select name="movilidad">
+        <option value="">Todas</option>
+        <option value="Sí" {% if filtros.movilidad == "Sí" %}selected{% endif %}>Sí</option>
+        <option value="No" {% if filtros.movilidad == "No" %}selected{% endif %}>No</option>
+      </select>
+    </div>
+    <button type="submit">Filtrar</button>
+    <a href="/admin/postulaciones" style="margin-left: 10px; text-decoration: none; color: #666;">Limpiar</a>
+  </form>
+
+  <!-- Tabla de postulaciones -->
+  <table>
+    <thead>
+      <tr>
+        <th>Candidato</th>
+        <th>Celular</th>
+        <th>Edad</th>
+        <th>Área pref</th>
+        <th>Localidad</th>
+        <th>Dispon</th>
+        <th>Mov</th>
+        <th>Vacante</th>
+        <th>CV</th>
+        <th>Estado</th>
+        <th>Observaciones</th>
+        <th>Calificación <!-- [CHANGE] Nueva columna --></th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in filas %}
+        <tr>
+          <td>{{ f.candidato.nombre_apellido or '' }}</td>
+          <td>{{ f.candidato.celular or '' }}</td>
+          <td>{{ f.candidato.edad or '' }}</td>
+          <td>{{ f.candidato.area_preferencia or '' }}</td>
+          <td>{{ f.candidato.localidad or '' }}</td>
+          <td>{{ f.candidato.disponibilidad or '' }}</td>
+          <td>{% if f.candidato.movilidad_propia %}Sí{% else %}No{% endif %}</td>
+          <td>{{ f.vacante.titulo if f.vacante else 'General' }}</td>
+          <td>
+            {% if f.candidato.cv_url %}
+              <a href="{{ f.candidato.cv_url }}" target="_blank" rel="noopener">Abrir CV</a>
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td>
+            <!-- [CHANGE] Badge de estado -->
+            {% set est = f.postulacion.estado or 'Recibido' %}
+            {% if est == 'Preseleccionado' %}
+              <span class="badge" style="background:#fef08a;color:#854d0e;padding:2px 6px;border-radius:9999px;">{{ est }}</span>
+            {% elif est == 'Entrevista' %}
+              <span class="badge" style="background:#bae6fd;color:#075985;padding:2px 6px;border-radius:9999px;">{{ est }}</span>
+            {% elif est == 'Ingresado' %}
+              <span class="badge" style="background:#bbf7d0;color:#166534;padding:2px 6px;border-radius:9999px;">{{ est }}</span>
+            {% elif est == 'Rechazado' %}
+              <span class="badge" style="background:#fecaca;color:#7f1d1d;padding:2px 6px;border-radius:9999px;">{{ est }}</span>
+            {% else %}
+              <span class="badge" style="background:#e5e7eb;color:#1f2937;padding:2px 6px;border-radius:9999px;">{{ est }}</span>
+            {% endif %}
+          </td>
+          <td>{{ f.postulacion.observaciones or '' }}</td>
+          <!-- [CHANGE] Control de calificación 1..10 -->
+          <td>
+            <select data-postulacion-id="{{ f.postulacion.id }}" class="calificacion-select" title="Calificar 1 a 10">
+              <option value="">–</option>
+              {% for n in range(1, 11) %}
+                <option value="{{ n }}" {% if f.postulacion.calificacion == n %}selected{% endif %}>{{ n }}</option>
+              {% endfor %}
+            </select>
+            <span class="calificacion-status" style="display:none; margin-left:6px; font-size: 11px; color: #16a34a;">Guardado</span>
+          </td>
+          <td class="actions">
+            <form method="POST" action="/admin/postulaciones">
+              <input type="hidden" name="postulacion_id" value="{{ f.postulacion.id }}" />
+              <!-- [CHANGE] Select de estado con catálogo -->
+              <select name="estado" required class="estado-select" data-postulacion-id="{{ f.postulacion.id }}">
+                <option value="Recibido" {% if (f.postulacion.estado or 'Recibido') == "Recibido" %}selected{% endif %}>Recibido</option>
+                <option value="Preseleccionado" {% if f.postulacion.estado == "Preseleccionado" %}selected{% endif %}>Preseleccionado</option>
+                <option value="Entrevista" {% if f.postulacion.estado == "Entrevista" %}selected{% endif %}>Entrevista</option>
+                <option value="Ingresado" {% if f.postulacion.estado == "Ingresado" %}selected{% endif %}>Ingresado</option>
+                <option value="Rechazado" {% if f.postulacion.estado == "Rechazado" %}selected{% endif %}>Rechazado</option>
+              </select>
+              <input type="text" name="entrevistado_por" value="{{ f.postulacion.entrevistado_por or '' }}" placeholder="Entrevistado por..." style="width: 100px;" />
+              <input type="text" name="observaciones" value="{{ f.postulacion.observaciones or '' }}" placeholder="Observaciones..." style="width: 120px;" />
+              <button type="submit">Actualizar</button>
+            </form>
+            <form method="POST" action="/admin/postulaciones/borrar" onsubmit="return confirm('¿Eliminar este postulado? Esta acción no se puede deshacer.');">
+              <input type="hidden" name="candidato_id" value="{{ f.candidato.id }}" />
+              <button type="submit" title="Eliminar" aria-label="Eliminar" class="btn-trash">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" aria-hidden="true">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M9 2a1 1 0 00-1 1v1H5a1 1 0 100 2h.293l.853 12.793A2 2 0 008.14 21h7.72a2 2 0 001.994-2.207L18.707 6H19a1 1 0 100-2h-3V3a1 1 0 00-1-1H9zm2 5a1 1 0 112 0v10a1 1 0 11-2 0V7zm-4 0a1 1 0 112 0v10a1 1 0 11-2 0V7zm8 0a1 1 0 112 0v10a1 1 0 11-2 0V7z"/>
+                </svg>
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- [CHANGE] JS mínimo para guardar calificación por AJAX y mostrar feedback -->
+  <script>
+    (function() {
+      function onChange(e) {
+        var sel = e.target;
+        if (!sel || !sel.classList.contains('calificacion-select')) return;
+        var pid = sel.getAttribute('data-postulacion-id');
+        var val = sel.value;
+        if (!pid || !val) return;
+        var formData = new FormData();
+        formData.append('calificacion', val);
+        fetch('/admin/postulaciones/' + encodeURIComponent(pid) + '/calificar', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        }).then(function(r){ return r.json(); }).then(function(resp){
+          var status = sel.parentElement.querySelector('.calificacion-status');
+          if (resp && resp.ok) {
+            if (status) { status.style.display = 'inline'; setTimeout(function(){ status.style.display='none'; }, 1000); }
+          } else {
+            alert('No se pudo guardar: ' + (resp && resp.error ? resp.error : 'Error desconocido'));
+          }
+        }).catch(function(err){ alert('Error de red al guardar calificación'); });
+      }
+      document.addEventListener('change', onChange, false);
+
+      // [CHANGE] Guardar estado por AJAX y refrescar badge
+      document.addEventListener('change', function(e){
+        var sel = e.target;
+        if (!sel || !sel.classList.contains('estado-select')) return;
+        var pid = sel.getAttribute('data-postulacion-id');
+        var val = sel.value;
+        var formData = new FormData();
+        formData.append('estado', val);
+        fetch('/admin/postulaciones/' + encodeURIComponent(pid) + '/estado', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        }).then(function(r){ return r.json(); }).then(function(resp){
+          if (!(resp && resp.ok)) { alert('No se pudo actualizar estado' + (resp && resp.error ? ('\n' + resp.error) : '')); return; }
+          // Actualizar badge en la misma fila
+          var row = sel.closest('tr');
+          if (!row) return;
+          var cell = row.querySelector('td:nth-child(10)'); // Columna Estado
+          if (!cell) return;
+          var est = resp.estado || val;
+          var map = {
+            'Preseleccionado': {bg:'#fef08a', fg:'#854d0e'},
+            'Entrevista': {bg:'#bae6fd', fg:'#075985'},
+            'Ingresado': {bg:'#bbf7d0', fg:'#166534'},
+            'Rechazado': {bg:'#fecaca', fg:'#7f1d1d'},
+            'Recibido': {bg:'#e5e7eb', fg:'#1f2937'}
+          };
+          var c = map[est] || map['Recibido'];
+          cell.innerHTML = '<span class="badge" style="background:'+c.bg+';color:'+c.fg+';padding:2px 6px;border-radius:9999px;">'+est+'</span>';
+        }).catch(function(){ alert('Error de red al actualizar estado'); });
+      }, false);
+    })();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Candidatos</h1>
+<form method="get" class="grid md:grid-cols-4 gap-3 bg-white rounded-2xl shadow p-4 mb-4">
+<div>
+<label class="block text-xs text-slate-500">Disponibilidad</label>
+<select name="disponibilidad" class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+<option value="">Todas</option>
+<option {{ 'selected' if request.args.get('disponibilidad')=='Full time' else '' }}>Full time</option>
+<option {{ 'selected' if request.args.get('disponibilidad')=='Part time' else '' }}>Part time</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="btn btn-primary w-full">Filtrar</button>
+</div>
+</form>
+
+
+<div class="overflow-x-auto bg-white rounded-2xl shadow">
+<table class="min-w-full text-sm">
+<thead class="bg-slate-100 text-slate-700">
+<tr>
+<th class="px-3 py-2 text-left">Fecha</th>
+<th class="px-3 py-2 text-left">Nombre</th>
+<th class="px-3 py-2 text-left">DNI</th>
+<th class="px-3 py-2 text-left">Localidad</th>
+<th class="px-3 py-2 text-left">Área</th>
+<th class="px-3 py-2 text-left">Disp.</th>
+<th class="px-3 py-2 text-left">CV</th>
+</tr>
+</thead>
+<tbody>
+{% for c in candidatos %}
+<tr class="border-t border-slate-100 hover:bg-slate-50">
+<td class="px-3 py-2">{{ c.fecha_postulacion.strftime('%d/%m/%Y') if c.fecha_postulacion else '' }}</td>
+<td class="px-3 py-2">{{ c.nombre_apellido }}</td>
+<td class="px-3 py-2">{{ c.dni }}</td>
+<td class="px-3 py-2">{{ c.localidad_nombre }}</td>
+<td class="px-3 py-2">{{ c.area_preferencia_nombre }}</td>
+<td class="px-3 py-2">{{ c.disponibilidad or '' }}</td>
+<td class="px-3 py-2">
+{% if c.cv_url %}
+<a href="{{ c.cv_url }}" target="_blank" class="text-blue-600 hover:underline">Abrir PDF</a>
+{% else %}
+<span class="text-slate-400">—</span>
+{% endif %}
+</td>
+</tr>
+{% else %}
+<tr><td colspan="7" class="px-3 py-6 text-center text-slate-500">No hay resultados con estos filtros.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endblock %}

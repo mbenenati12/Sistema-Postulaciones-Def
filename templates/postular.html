@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}Postulación — Clínica de Cuyo{% endblock %}
+{% block content %}
+<section class="max-w-3xl mx-auto">
+  <div class="mb-3">
+    <a href="/" id="back-form" class="btn" style="background:#e2e8f0">← Volver</a>
+  </div>
+  <header class="flex items-center gap-3 mb-4">
+    <img src="{{ url_for('static', filename='logo-chico-removebg-preview.png') }}?v=1" alt="Clínica de Cuyo" class="h-20 w-auto" />
+    <h1 class="text-2xl font-semibold">Trabajá con nosotros</h1>
+  </header>
+
+  {% if mensaje %}
+  <div class="px-3 py-2 rounded-lg text-sm mb-3 {{ 'bg-green-100 text-green-700' if exito else 'bg-rose-100 text-rose-700' }}">
+    {{ mensaje }}
+  </div>
+  {% endif %}
+
+  <form method="POST" action="/postular" enctype="multipart/form-data" class="bg-white rounded-2xl shadow p-6 grid md:grid-cols-2 gap-4">
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">Nombre y Apellido <span class="text-rose-600">*</span></label>
+      <input type="text" name="nombre_apellido" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">DNI <span class="text-rose-600">*</span></label>
+      <input type="text" name="dni" inputmode="numeric" pattern="^[0-9]+$" title="El DNI debe contener solo números (sin puntos ni símbolos)." required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Edad <span class="text-rose-600">*</span></label>
+      <input type="number" name="edad" min="15" max="100" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+    </div>
+
+    {% if area_prefill %}
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">Área <span class="text-rose-600">*</span></label>
+      <div class="mt-1 p-2 border border-slate-300 rounded-lg bg-slate-50">{{ area_prefill }}</div>
+      <input type="hidden" name="area_preferencia" value="{{ area_prefill }}">
+      <input type="hidden" name="vacante_id" value="{{ vacante_id or '' }}" />
+    </div>
+    {% else %}
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">Área de preferencia <span class="text-rose-600">*</span></label>
+      <select name="area_preferencia" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="" disabled selected>Elegí un área</option>
+        {% for a in areas %}
+        <option value="{{ a.id if a.id is not none else a.nombre }}" {% if area_prefill and a.nombre==area_prefill %}selected{% endif %}>{{ a.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div>
+      <label class="block text-sm font-medium">Licencia de conducir <span class="text-rose-600">*</span></label>
+      <select name="licencia_conducir" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="Sí">Sí</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Movilidad propia <span class="text-rose-600">*</span></label>
+      <select name="movilidad_propia" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="Sí">Sí</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Disponibilidad <span class="text-rose-600">*</span></label>
+      <select name="disponibilidad" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="" disabled selected>Elegí una disponibilidad</option>
+        {% for d in disponibilidades %}
+        <option value="{{ d }}">{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">¿Tenés un familiar trabajando en la clínica? <span class="text-rose-600">*</span></label>
+      <select name="familiar_en_clinica" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="" disabled selected>Seleccioná una opción</option>
+        <option value="Sí">Sí</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">¿Cómo te enteraste del puesto? <span class="text-rose-600">*</span></label>
+      <select name="fuente_postulacion" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="" disabled selected>Seleccioná una opción</option>
+        <option>Referencias por conocidos</option>
+        <option>LinkedIn</option>
+        <option>Instagram</option>
+        <option>Facebook</option>
+        <option>Otros</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium">Número de celular <span class="text-rose-600">*</span></label>
+      <input type="text" name="celular" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">E‑mail <span class="text-rose-600">*</span></label>
+      <input type="email" name="mail" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">Localidad (Departamento) <span class="text-rose-600">*</span></label>
+      {% if localidades and localidades|length > 0 %}
+      <select name="localidad" required class="mt-1 w-full border border-slate-300 rounded-lg p-2">
+        <option value="" disabled selected>Elegí una localidad</option>
+        {% for l in localidades %}
+        <option value="{{ l }}">{{ l }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      <input type="text" name="localidad" required class="mt-1 w-full border border-slate-300 rounded-lg p-2" />
+      {% endif %}
+    </div>
+
+    <div class="md:col-span-2">
+      <label class="block text-sm font-medium">CV (PDF) <span class="text-rose-600">*</span></label>
+      <input type="file" name="cv" accept="application/pdf" required class="mt-1 w-full" />
+    </div>
+
+    <div class="md:col-span-2">
+      <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-language="es" data-theme="auto"></div>
+    </div>
+
+    <div class="md:col-span-2 flex justify-end gap-2 pt-2">
+      <a href="{{ url_for('home') }}" class="btn" style="background:#e2e8f0">Cancelar</a>
+      <button class="btn btn-success">Enviar postulación</button>
+    </div>
+  </form>
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <script>
+    (function(){
+      var formEl = document.querySelector('form[action="/postular"]');
+      var back = document.getElementById('back-form');
+      if (formEl && back) {
+        var dirty = false;
+        formEl.addEventListener('input', function(){ dirty = true; }, { capture: true });
+        back.addEventListener('click', function(e){
+          if (dirty) {
+            var ok = confirm('Aún no enviaste la postulación. ¿Querés salir igualmente?');
+            if (!ok) { e.preventDefault(); }
+          }
+        });
+      }
+      var inputs = document.querySelectorAll('input[name="dni"]');
+      for (var i=0; i<inputs.length; i++){
+        var el = inputs[i];
+        el.addEventListener('input', function(){
+          this.value = this.value.replace(/\D+/g,'');
+          this.setCustomValidity('');
+        });
+        el.addEventListener('invalid', function(){
+          if (this.value && /\D/.test(this.value)) {
+            this.setCustomValidity('El DNI debe contener solo números (sin puntos ni símbolos).');
+          } else {
+            this.setCustomValidity('Completá el DNI.');
+          }
+        });
+      }
+    })();
+  </script>
+</section>
+{% endblock %}

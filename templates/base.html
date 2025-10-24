@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% block title %}Sistema de Postulaciones{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* Brand colors */
+:root{
+  --brand-blue: #0033A0; /* Pantone 286 C */
+  --brand-green: #859C27; /* Pantone 377 C */
+}
+
+body { font-family: "Nunito Sans", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+
+/* Button primitives for public pages */
+.btn{ display:inline-block; padding:8px 12px; border-radius:8px; text-decoration:none; cursor:pointer; }
+.btn-primary{ background: var(--brand-blue); color:#fff; }
+.btn-primary:hover{ background:#00267a; }
+.btn-success{ background: var(--brand-green); color:#fff; }
+.btn-success:hover{ background:#6c7f20; }
+.btn-danger{ background:#5b2a2a; color:#fff; }
+.btn-danger:hover{ background:#4a2222; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<header class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+{% block brand %}
+<a href="{{ url_for('home') }}" class="flex items-center gap-3">
+<img src="{{ url_for('static', filename='logo-chico-removebg-preview.png') }}?v=1" alt="Clínica de Cuyo" class="h-20 w-auto" />
+<span class="sr-only">Clínica de Cuyo — Postulaciones</span>
+</a>
+{% endblock %}
+<nav class="flex items-center gap-2"></nav>
+</header>
+
+
+<main class="max-w-6xl mx-auto px-4 pb-16">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="space-y-2 mb-4">
+{% for category, message in messages %}
+<div class="px-3 py-2 rounded-lg text-sm {{ 'bg-green-100 text-green-700' if category=='success' else 'bg-amber-100 text-amber-700' }}">{{ message }}</div>
+{% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+{% block content %}{% endblock %}
+</main>
+
+
+<footer class="border-t border-slate-200 py-6">
+<div class="max-w-6xl mx-auto px-4 flex items-center justify-between text-sm text-slate-500">
+<span>© {{ 2025 }} Clínica de Cuyo — Sistema de Postulaciones</span>
+<img src="{{ url_for('static', filename='nexohr-logo.png') }}" alt="NexoHR" class="w-auto opacity-80" style="height:60px" />
+</div>
+</footer>
+</body>
+</html>

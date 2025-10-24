@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block brand %}{% endblock %}
+{% block content %}
+<div class="flex justify-center mb-4">
+<img src="{{ url_for('static', filename='logo-chico-removebg-preview.png') }}?v=1" alt="Clínica de Cuyo" class="h-56 w-auto" />
+</div>
+<h1 class="text-2xl font-semibold mb-4">Vacantes abiertas</h1>
+
+
+{% if vacantes and vacantes|length > 0 %}
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+{% for v in vacantes %}
+<article class="bg-white rounded-2xl shadow p-4 border border-slate-600 flex flex-col justify-between">
+<header class="text-center">
+<h2 class="text-lg font-semibold">{{ v.titulo }}</h2>
+<p class="text-sm text-slate-500">Área: {{ v.area_nombre or v.area }}</p>
+</header>
+<p class="text-sm text-slate-600 mt-2 line-clamp-3">{{ v.descripcion }}</p>
+<footer class="mt-4 flex gap-2 justify-center">
+<a href="{{ url_for('vacante_detalle', vacante_id=v.id) }}" class="btn btn-success text-sm">Ver detalle</a>
+</footer>
+</article>
+{% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-2xl shadow p-6">
+<p class="text-slate-700">No tenemos vacantes disponibles por el momento.</p>
+</div>
+{% endif %}
+
+
+<div class="mt-6">
+<!-- [CHANGE] Actualizamos el texto del CTA y agregamos leyenda -->
+<a href="{{ url_for('form_postulante') }}" class="btn btn-primary">Dejanos tu CV</a>
+<p class="text-xs text-slate-500 mt-1">Si no hay vacantes que se ajusten a tu perfil, dejá tu CV igual.</p>
+</div>
+{% endblock %}

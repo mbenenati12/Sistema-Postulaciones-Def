@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Confirmación{% endblock %}
+{% block content %}
+{% set force_home_back = True %}
+{% if ok %}
+<div class="bg-green-100 text-green-800 rounded-2xl p-6 shadow">
+<h1 class="text-xl font-semibold mb-2">¡Postulación recibida!</h1>
+<p>Gracias por postularte. Te contactaremos si avanzás a la siguiente etapa.</p>
+<div class="mt-4">
+  <a href="/" class="btn btn-success">Volver al inicio</a>
+  <a href="{{ url_for('home') }}" class="btn" style="background:#e2e8f0">Ver vacantes</a>
+</div>
+</div>
+{% else %}
+<div class="bg-rose-100 text-rose-800 rounded-2xl p-6 shadow">
+<h1 class="text-xl font-semibold mb-2">No pudimos registrar tu postulación</h1>
+<p>{{ error or 'Ya existe una postulación con ese DNI o hubo un problema con el archivo.' }}</p>
+<a href="{{ url_for('form_postulante') }}" class="inline-block mt-3 px-4 py-2 rounded-lg bg-slate-800 text-white hover:bg-black">Volver al formulario</a>
+</div>
+{% endif %}
+{% endblock %}
