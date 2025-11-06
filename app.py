@@ -925,6 +925,15 @@ def admin_postulaciones():
     vacantes: List[Dict[str, Any]] = []
     candidatos: List[Dict[str, Any]] = []
     postulaciones: List[Dict[str, Any]] = []
+    # Paginación
+    page = int(request.args.get("page", "1") or 1)
+    page = max(page, 1)
+    per_page = 50
+    from_row = (page - 1) * per_page
+    # range es inclusivo, pedimos uno extra para detectar "siguiente"
+    to_row = from_row + per_page  # per_page + 1 items
+    has_prev = page > 1
+    has_next = False
 
     if supabase is not None:
         try:
@@ -970,7 +979,8 @@ def admin_postulaciones():
 
         # [CHANGE] Aplicar filtros sobre postulaciones en la DB cuando haya valores
         try:
-            post_q = supabase.table("postulaciones").select("*")
+            # Pedimos count para potenciales usos futuros; range para paginar
+            post_q = supabase.table("postulaciones").select("*", count="exact")
             if filtros["estado"]:
                 # [CHANGE] Comparación case-insensitive para compatibilidad con datos antiguos
                 post_q = post_q.ilike("estado", filtros["estado"])
@@ -998,8 +1008,16 @@ def admin_postulaciones():
                         vacantes=vacantes,
                         filas=filas,
                         mensaje=None,
+                        page=page,
+                        has_prev=has_prev,
+                        has_next=has_next,
                     )
-            postulaciones = (post_q.order("created_at", desc=True).execute().data) or []
+            # Aplicar orden y rango (solicitamos uno extra para saber si hay siguiente)
+            res_post = post_q.order("created_at", desc=True).range(from_row, to_row).execute()
+            postulaciones = (getattr(res_post, "data", None) or [])
+            if len(postulaciones) > per_page:
+                has_next = True
+                postulaciones = postulaciones[:per_page]
 
             # [CHANGE] Si hay filtro 'area' (texto), aplicar OR: candidato.area_preferencia o vacante.area
             if filtros["area"]:
@@ -1045,6 +1063,9 @@ def admin_postulaciones():
         vacantes=vacantes,
         filas=filas,
         mensaje=None,
+        page=page,
+        has_prev=has_prev,
+        has_next=has_next,
     )
 
 

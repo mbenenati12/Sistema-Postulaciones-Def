@@ -213,6 +213,36 @@
     </tbody>
   </table>
 
+  {% if has_prev or has_next %}
+  <div class="pagination" style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
+    <form method="GET" action="/admin/postulaciones" style="display:inline;">
+      <input type="hidden" name="area" value="{{ filtros.area }}" />
+      <input type="hidden" name="area_preferencia" value="{{ filtros.area_preferencia }}" />
+      <input type="hidden" name="localidad" value="{{ filtros.localidad }}" />
+      <input type="hidden" name="disponibilidad" value="{{ filtros.disponibilidad }}" />
+      <input type="hidden" name="estado" value="{{ filtros.estado }}" />
+      <input type="hidden" name="vacante_id" value="{{ filtros.vacante_id }}" />
+      <input type="hidden" name="edad_min" value="{{ filtros.edad_min }}" />
+      <input type="hidden" name="edad_max" value="{{ filtros.edad_max }}" />
+      <input type="hidden" name="movilidad" value="{{ filtros.movilidad }}" />
+
+      {% if has_prev %}
+        <button type="submit" name="page" value="{{ page - 1 }}">« Anterior</button>
+      {% else %}
+        <button type="button" disabled>« Anterior</button>
+      {% endif %}
+
+      <span style="font-size: 13px; color: #374151;">Página {{ page }}</span>
+
+      {% if has_next %}
+        <button type="submit" name="page" value="{{ page + 1 }}">Siguiente »</button>
+      {% else %}
+        <button type="button" disabled>Siguiente »</button>
+      {% endif %}
+    </form>
+  </div>
+  {% endif %}
+
   <!-- [CHANGE] JS mínimo para guardar calificación por AJAX y mostrar feedback -->
   <script>
     (function() {
