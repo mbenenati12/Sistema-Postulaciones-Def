@@ -14,6 +14,9 @@ venv/
 .env
 .env.*
 
+# NEVER commit .env to git - contains secrets
+# Use .env.example as template
+
 # Editors/IDE
 .vscode/
 .idea/
